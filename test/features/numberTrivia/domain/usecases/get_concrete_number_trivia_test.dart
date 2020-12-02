@@ -34,7 +34,7 @@ void main() {
       // Should always return right side of Either that contains a test NumberTrivia object
       when(mockNumberTriviaRepository.getConcreteNumberTrivia(any))
           .thenAnswer((_) async => Right(testNumberTrivia));
-
+    
       final result = await useCase.execute(number: testNumber);
 
       // Result should return whatever Repository returned
