@@ -9,7 +9,6 @@ import 'package:tdd_number_trivia/features/numberTrivia/data/datasources/number_
 import 'package:tdd_number_trivia/features/numberTrivia/data/models/number_trivia_model.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/data/repositories/number_trivia_repository_impl.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/domain/entities/number_trivia.dart';
-import 'package:tdd_number_trivia/features/numberTrivia/domain/repositories/number_trivia_repository.dart';
 
 class MockNumberTriviaLocalDataSource extends Mock
     implements NumberTriviaLocalDataSource {}
@@ -95,6 +94,40 @@ void main() {
           expect(result, Left(ServerFailure()));
           verify(remoteDataSource.getConcreteNumberTrivia(testNumber));
           verifyZeroInteractions(localDataSource);
+        },
+      );
+    });
+
+    group('device is offline', () {
+      setUp(() {
+        when(networkInfo.isConnected).thenAnswer((_) async => false);
+      });
+
+      test(
+        'should get cached number trivia when cached data is present',
+        () async {
+          when(localDataSource.getLastNumberTrivia())
+              .thenAnswer((_) async => testNumberTriviaModel);
+
+          final result = await repository.getConcreteNumberTrivia(testNumber);
+
+          expect(result, Right(testNumberTrivia));
+          verify(localDataSource.getLastNumberTrivia());
+          verifyZeroInteractions(remoteDataSource);
+        },
+      );
+
+      test(
+        'should convert CacheException to CacheFailure if no data is cached',
+        () async {
+          when(localDataSource.getLastNumberTrivia())
+              .thenThrow(CacheException());
+
+          final result = await repository.getConcreteNumberTrivia(testNumber);
+
+          expect(result, Left(CacheFailure()));
+          verify(localDataSource.getLastNumberTrivia());
+          verifyZeroInteractions(remoteDataSource);
         },
       );
     });
