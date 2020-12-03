@@ -15,7 +15,7 @@ void main() {
   GetConcreteNumberTrivia useCase;
   MockNumberTriviaRepository mockNumberTriviaRepository;
 
-  // Handy Flutter method for tests that runs before every test
+  // Handy Flutter method that runs before every test
   // We initialize our objects in there
 
   setUp(() {
@@ -34,8 +34,8 @@ void main() {
       // Should always return right side of Either that contains a test NumberTrivia object
       when(mockNumberTriviaRepository.getConcreteNumberTrivia(any))
           .thenAnswer((_) async => Right(testNumberTrivia));
-    
-      final result = await useCase.execute(number: testNumber);
+
+      final result = await useCase(Params(number: testNumber));
 
       // Result should return whatever Repository returned
       expect(result, Right(testNumberTrivia));
