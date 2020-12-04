@@ -3,10 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:tdd_number_trivia/core/error/exceptions.dart';
 
 import 'package:tdd_number_trivia/core/error/failure.dart';
-import 'package:tdd_number_trivia/core/platform/network_info.dart';
+import 'package:tdd_number_trivia/core/network/network_info.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/data/datasources/number_trivia_local_data_source.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/data/datasources/number_trivia_remote_data_source.dart';
-import 'package:tdd_number_trivia/features/numberTrivia/data/models/number_trivia_model.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/domain/entities/number_trivia.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/domain/repositories/number_trivia_repository.dart';
 
@@ -28,10 +27,6 @@ class NumberTriviaRepositoryImpl implements NumberTriviaRepository {
   final NumberTriviaLocalDataSource _localDataSource;
   final NumberTriviaRemoteDataSource _remoteDataSource;
   final NetworkInfo _networkInfo;
-
-  NumberTriviaLocalDataSource get localDataSource => _localDataSource;
-  NumberTriviaRemoteDataSource get remoteDataSource => _remoteDataSource;
-  NetworkInfo get networkInfo => _networkInfo;
 
   @override
   Future<Either<Failure, NumberTrivia>> getConcreteNumberTrivia(
