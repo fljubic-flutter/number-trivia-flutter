@@ -46,4 +46,21 @@ void main() {
       expect(() => call(), throwsA(TypeMatcher<CacheException>()));
     });
   });
+
+  group('cacheNumberTrivia', () {
+    final testNumberTriviaModel =
+        NumberTriviaModel(text: 'test trivia', number: 1);
+
+    // Can't really check if there's data present in preferences,
+    // next best thing to do is check that it was called with proper arguments
+
+    test('should call SharedPreferences to cache data', () {
+      localDataSource.cacheNumberTrivia(testNumberTriviaModel);
+
+      final expectedJsonString = json.encode(testNumberTriviaModel.toJson());
+
+      verify(sharedPreferences.setString(
+          CACHED_NUMBER_TRIVIA, expectedJsonString));
+    });
+  });
 }
