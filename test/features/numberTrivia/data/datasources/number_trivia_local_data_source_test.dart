@@ -43,7 +43,7 @@ void main() {
 
       final call = localDataSource.getLastNumberTrivia;
 
-      expect(() => call(), throwsA(TypeMatcher<CacheException>()));
+      expect(() => call(), throwsA(isA<CacheException>()));
     });
   });
 

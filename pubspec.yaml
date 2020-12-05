@@ -29,6 +29,7 @@ dependencies:
   equatable: ^1.2.5
   flutter_hooks: ^0.15.0
   hooks_riverpod: ^0.12.1
+  http: ^0.12.2
   shared_preferences: ^0.5.12+4
 
 dev_dependencies:
