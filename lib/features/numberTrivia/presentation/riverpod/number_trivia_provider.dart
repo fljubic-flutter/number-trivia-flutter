@@ -2,16 +2,18 @@ import 'package:data_connection_checker/data_connection_checker.dart';
 import 'package:hooks_riverpod/all.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tdd_number_trivia/core/error/failure.dart';
 import 'package:tdd_number_trivia/core/network/network_info_impl.dart';
 import 'package:tdd_number_trivia/core/utils/input_converter.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/data/datasources/number_trivia_local_data_source.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/data/datasources/number_trivia_remote_data_source.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/data/repositories/number_trivia_repository_impl.dart';
+import 'package:tdd_number_trivia/features/numberTrivia/domain/usecases/get_concrete_number_trivia.dart';
 
-final repositoryProvider = Provider(
-  (ref) => NumberTriviaRepositoryImpl(
-    localDataSource:
-        NumberTriviaLocalDataSourceImpl(sharedPreferences: SharedPreferences),
+final repositoryProvider = FutureProvider(
+  (ref) async => NumberTriviaRepositoryImpl(
+    localDataSource: NumberTriviaLocalDataSourceImpl(
+        sharedPreferences: await SharedPreferences.getInstance()),
     remoteDataSource: NumberTriviaRemoteDataSourceImpl(client: http.Client()),
     networkInfo: NetworkInfoImpl(DataConnectionChecker()),
   ),
@@ -19,25 +21,39 @@ final repositoryProvider = Provider(
 
 final inputConverterProvider = Provider((ref) => InputConverter());
 
-final getConcreteNumberTriviaProvider = FutureProvider((ref) {
-  // watchat neki statenotifier
-  // kada se promjeni readat repository i inputconverter
-
-  // ovisno o dati
-});
-
-final numberTriviaProvider = FutureProvider.family((ref, String number) {
-  final repository = ref.read(repositoryProvider);
+// ignore: missing_return
+final numberTriviaProvider = FutureProvider.family((ref, String number) async {
+  final repository = ref.read(repositoryProvider).data?.value;
   final converter = ref.read(inputConverterProvider);
   final buttonPressed = ref.watch(buttonPressedProvider).state;
 
-  if (buttonPressed == ButtonPressed.concrete) {
-    final num = converter.stringToUnsignedInt(number);
+  switch (buttonPressed) {
+    case ButtonPressed.none:
+      return "";
 
-    num.fold((l) => null, (r) => null);
+    case ButtonPressed.concrete:
+      final failureOrNumber = converter.stringToUnsignedInt(number);
+
+      if (failureOrNumber.isLeft()) {
+        return "Invalid input - the number must be a positive integer or zero";
+      } else {
+        int num = failureOrNumber.getOrElse(null);
+        final failureOrConcreteNumberTrivia =
+            await GetConcreteNumberTrivia(repository).call(Params(number: num));
+
+        String message = failureOrConcreteNumberTrivia.fold((failure) {
+          if (failure is ServerFailure) {
+            return "Server Failure";
+          } else {
+            return "Cache Failure";
+          }
+        }, (numberTrivia) => numberTrivia.text);
+        return message;
+      }
+      break;
+    case ButtonPressed.random:
+      return "";
   }
-
-  print(buttonPressed);
 });
 
 final buttonPressedProvider = StateProvider((ref) => ButtonPressed.none);

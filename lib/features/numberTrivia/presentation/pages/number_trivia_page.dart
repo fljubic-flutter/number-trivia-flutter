@@ -16,7 +16,11 @@ class NumberTriviaPage extends HookWidget {
               builder: (context) {
                 final numberTrivia = useProvider(
                     numberTriviaProvider(textEditingController.value.text));
-                return Container(child: Text(''));
+                return numberTrivia.when(
+                  loading: () => CircularProgressIndicator(),
+                  data: (value) => Text(value),
+                  error: (e, s) => Text("Unexpected error $e"),
+                );
               },
             ),
             TextField(
