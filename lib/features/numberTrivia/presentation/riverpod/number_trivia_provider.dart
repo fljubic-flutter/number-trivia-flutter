@@ -4,11 +4,13 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tdd_number_trivia/core/error/failure.dart';
 import 'package:tdd_number_trivia/core/network/network_info_impl.dart';
+import 'package:tdd_number_trivia/core/usecases/usecase.dart';
 import 'package:tdd_number_trivia/core/utils/input_converter.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/data/datasources/number_trivia_local_data_source.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/data/datasources/number_trivia_remote_data_source.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/data/repositories/number_trivia_repository_impl.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/domain/usecases/get_concrete_number_trivia.dart';
+import 'package:tdd_number_trivia/features/numberTrivia/domain/usecases/get_random_number_trivia.dart';
 
 final repositoryProvider = FutureProvider(
   (ref) async => NumberTriviaRepositoryImpl(
@@ -29,7 +31,7 @@ final numberTriviaProvider = FutureProvider.family((ref, String number) async {
 
   switch (buttonPressed) {
     case ButtonPressed.none:
-      return "";
+      return "Start search!";
 
     case ButtonPressed.concrete:
       final failureOrNumber = converter.stringToUnsignedInt(number);
@@ -52,7 +54,16 @@ final numberTriviaProvider = FutureProvider.family((ref, String number) async {
       }
       break;
     case ButtonPressed.random:
-      return "";
+      final failureOrRandomNumberTrivia =
+          await GetRandomNumberTrivia(repository).call(NoParams());
+      String message = failureOrRandomNumberTrivia.fold((failure) {
+        if (failure is ServerFailure) {
+          return "Server Failure";
+        } else {
+          return "Check your internet";
+        }
+      }, (numberTrivia) => numberTrivia.text);
+      return message;
   }
 });
 
@@ -63,12 +74,3 @@ enum ButtonPressed {
   concrete,
   random,
 }
-
-// onPressed promjeni buttonPressedProvider.state
-// trebam ga watchat u numberTriviaProvideru
-// ako je ButtonPressed.concrete onda prvo convertati broj u int
-// readat getConcreteNumberTriviaProvider(repository)
-// i await .call()
-// ako je ButtonPressed.random readat getRandomNumberTriviaProvider(repository) i opet isto
-
-// u getConcreteNumberTriviaProvideru
