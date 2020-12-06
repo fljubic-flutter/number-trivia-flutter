@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/all.dart';
 
-import '../features/numberTrivia/presentation/pages/number_trivia_page.dart';
+import 'features/numberTrivia/presentation/pages/number_trivia_page.dart';
 
 void main() {
   runApp(ProviderScope(child: MyApp()));
