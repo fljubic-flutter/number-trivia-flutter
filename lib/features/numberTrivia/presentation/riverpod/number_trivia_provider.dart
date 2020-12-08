@@ -12,6 +12,15 @@ import 'package:tdd_number_trivia/features/numberTrivia/data/repositories/number
 import 'package:tdd_number_trivia/features/numberTrivia/domain/usecases/get_concrete_number_trivia.dart';
 import 'package:tdd_number_trivia/features/numberTrivia/domain/usecases/get_random_number_trivia.dart';
 
+const INVALID_INPUT_MESSAGE =
+    "Invalid input - the number must be a positive integer or zero";
+
+const INITIAL_MESSAGE = "Start search!";
+
+const SERVER_FAILURE_MESSAGE = "Server Failure";
+
+const CACHE_FAILURE_MESSAGE = "Check your internet";
+
 final repositoryProvider = FutureProvider(
   (ref) async => NumberTriviaRepositoryImpl(
     localDataSource: NumberTriviaLocalDataSourceImpl(
@@ -23,31 +32,32 @@ final repositoryProvider = FutureProvider(
 
 final inputConverterProvider = Provider((ref) => InputConverter());
 
-// ignore: missing_return
 final numberTriviaProvider = FutureProvider.family((ref, String number) async {
   final repository = ref.read(repositoryProvider).data?.value;
   final converter = ref.read(inputConverterProvider);
   final buttonPressed = ref.watch(buttonPressedProvider).state;
 
+  String message;
   switch (buttonPressed) {
     case ButtonPressed.none:
-      return "Start search!";
+      message = INITIAL_MESSAGE;
+      break;
 
     case ButtonPressed.concrete:
       final failureOrNumber = converter.stringToUnsignedInt(number);
 
       if (failureOrNumber.isLeft()) {
-        return "Invalid input - the number must be a positive integer or zero";
+        return INVALID_INPUT_MESSAGE;
       } else {
         int num = failureOrNumber.getOrElse(null);
         final failureOrConcreteNumberTrivia =
             await GetConcreteNumberTrivia(repository).call(Params(number: num));
 
-        String message = failureOrConcreteNumberTrivia.fold((failure) {
+        message = failureOrConcreteNumberTrivia.fold((failure) {
           if (failure is ServerFailure) {
-            return "Server Failure";
+            return SERVER_FAILURE_MESSAGE;
           } else {
-            return "Cache Failure";
+            return CACHE_FAILURE_MESSAGE;
           }
         }, (numberTrivia) => numberTrivia.text);
         return message;
@@ -56,15 +66,15 @@ final numberTriviaProvider = FutureProvider.family((ref, String number) async {
     case ButtonPressed.random:
       final failureOrRandomNumberTrivia =
           await GetRandomNumberTrivia(repository).call(NoParams());
-      String message = failureOrRandomNumberTrivia.fold((failure) {
+      message = failureOrRandomNumberTrivia.fold((failure) {
         if (failure is ServerFailure) {
-          return "Server Failure";
+          return SERVER_FAILURE_MESSAGE;
         } else {
-          return "Check your internet";
+          return CACHE_FAILURE_MESSAGE;
         }
       }, (numberTrivia) => numberTrivia.text);
-      return message;
   }
+  return message;
 });
 
 final buttonPressedProvider = StateProvider((ref) => ButtonPressed.none);
