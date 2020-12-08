@@ -11,8 +11,10 @@ They are also useful to make sure we know what we want to do.
 
 In the tutorial, the state management solution is BLoC.
 I'm really not a fan of that so I decided to use Riverpod instead.
+
 Since the author knew he'd be using BLoC in advance, he structured his code to be used well with it.
-That's why for instance he's using dartz to handle errors.
+That's why for instance he's using dartz to handle errors. With Riverpod that's completely unnecessary, and errors are handled pretty easily.
+
 Also using Riverpod's providers means we'll be wanting to pass our dependencies with ref.read instead of inside constructors.
 So I'd have to change all my tests and classes.
 That seemed like too much hustle in this project since I'm not really emotionally connected to it.
